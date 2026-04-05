@@ -1405,9 +1405,13 @@
     <main>
         <!-- HERO -->
         <section class="hero" id="hero">
-            <video class="hero-video" autoplay muted loop playsinline preload="metadata"
+            <video class="hero-video" id="hero-video-a" autoplay muted playsinline preload="auto"
                 poster="https://images.pexels.com/photos/3311574/pexels-photo-3311574.jpeg?auto=compress&cs=tinysrgb&w=1600">
                 <source src="Animate_cars_driving_202604040024.mp4" type="video/mp4">
+            </video>
+            <video class="hero-video" id="hero-video-b" muted playsinline preload="auto"
+                style="opacity: 0;">
+                <source src="Black_Dodge_Challenger_202604052208.mp4" type="video/mp4">
             </video>
             <div class="hero-overlay"></div>
 
@@ -2018,16 +2022,41 @@
         }
 
         // ============================================
-        // VIDEO MOBILE HANDLING
+        // VIDEO LOOP SYSTEM (A → B → A → B ...)
         // ============================================
-        const heroVideo = document.querySelector('.hero-video');
-        if (heroVideo) {
+        const videoA = document.getElementById('hero-video-a');
+        const videoB = document.getElementById('hero-video-b');
+
+        if (videoA && videoB) {
             const isMobile = window.matchMedia('(max-width: 768px)').matches;
             const saveData = navigator.connection?.saveData;
 
             if (isMobile || saveData) {
-                heroVideo.pause();
-                heroVideo.removeAttribute('autoplay');
+                videoA.pause();
+                videoA.removeAttribute('autoplay');
+            } else {
+                // Seamless crossfade loop: A ends → fade to B, B ends → fade to A
+                function setupLoop() {
+                    videoA.addEventListener('ended', () => {
+                        videoB.currentTime = 0;
+                        videoB.play();
+                        videoB.style.opacity = '1';
+                        videoA.style.opacity = '0';
+                    });
+
+                    videoB.addEventListener('ended', () => {
+                        videoA.currentTime = 0;
+                        videoA.play();
+                        videoA.style.opacity = '1';
+                        videoB.style.opacity = '0';
+                    });
+                }
+
+                // Add transition for smooth crossfade
+                videoA.style.transition = 'opacity 0.3s ease';
+                videoB.style.transition = 'opacity 0.3s ease';
+
+                setupLoop();
             }
         }
 

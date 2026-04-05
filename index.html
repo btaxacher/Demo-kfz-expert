@@ -380,8 +380,8 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.5;
-            filter: grayscale(1) contrast(1.1);
+            opacity: 1;
+            filter: grayscale(1) contrast(1.1) brightness(0.5);
             z-index: -2;
         }
 
@@ -2035,28 +2035,47 @@
                 videoA.pause();
                 videoA.removeAttribute('autoplay');
             } else {
-                // Seamless crossfade loop: A ends → fade to B, B ends → fade to A
-                function setupLoop() {
-                    videoA.addEventListener('ended', () => {
+                // Pre-cue crossfade: start next video BEFORE current ends
+                const CROSSFADE_LEAD = 0.4;
+                const CROSSFADE_DURATION = '0.6s';
+
+                videoA.style.transition = 'opacity ' + CROSSFADE_DURATION + ' ease';
+                videoB.style.transition = 'opacity ' + CROSSFADE_DURATION + ' ease';
+
+                let switchingA = false;
+                let switchingB = false;
+
+                // Pre-load video B
+                videoB.currentTime = 0;
+                videoB.load();
+
+                // Set initial state
+                videoA.style.opacity = '1';
+                videoB.style.opacity = '0';
+
+                videoA.addEventListener('timeupdate', () => {
+                    if (!switchingA && videoA.duration - videoA.currentTime <= CROSSFADE_LEAD) {
+                        switchingA = true;
                         videoB.currentTime = 0;
                         videoB.play();
-                        videoB.style.opacity = '1';
                         videoA.style.opacity = '0';
-                    });
+                        videoB.style.opacity = '1';
+                    }
+                });
 
-                    videoB.addEventListener('ended', () => {
+                videoA.addEventListener('ended', () => { switchingA = false; });
+
+                videoB.addEventListener('timeupdate', () => {
+                    if (!switchingB && videoB.duration - videoB.currentTime <= CROSSFADE_LEAD) {
+                        switchingB = true;
                         videoA.currentTime = 0;
                         videoA.play();
-                        videoA.style.opacity = '1';
                         videoB.style.opacity = '0';
-                    });
-                }
+                        videoA.style.opacity = '1';
+                    }
+                });
 
-                // Add transition for smooth crossfade
-                videoA.style.transition = 'opacity 0.3s ease';
-                videoB.style.transition = 'opacity 0.3s ease';
-
-                setupLoop();
+                videoB.addEventListener('ended', () => { switchingB = false; });
             }
         }
 

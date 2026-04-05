@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KFZ EXPERTE | PRÄZISION IM DETAIL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           CSS CUSTOM PROPERTIES
+           ============================================ */
+        :root {
+            --bg: #050505;
+            --surface: #0D0D0D;
+            --surface-elevated: #141414;
+            --accent: #4FD1C5;
+            --accent-dim: #2A6B65;
+            --accent-glow: rgba(79, 209, 197, 0.15);
+            --text-main: #FFFFFF;
+            --text-dim: #888888;
+            --text-muted: #555555;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        @property --angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+        /* ============================================
+           RESET & BASE
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            cursor: none;
+        }
+
+        a { cursor: none; }
+        button { cursor: none; }
+
+        /* ============================================
+           CUSTOM CURSOR
+           ============================================ */
+        .cursor-dot {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99999;
+            mix-blend-mode: difference;
+            transition: width 0.3s, height 0.3s, margin 0.3s, background 0.3s;
+        }
+
+        .cursor-ring {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99998;
+            opacity: 0.5;
+            transition: width 0.3s, height 0.3s, margin 0.3s, opacity 0.3s, border-color 0.3s;
+        }
+
+        .cursor-dot.hovering {
+            width: 60px;
+            height: 60px;
+            background: rgba(79, 209, 197, 0.1);
+            border: 1px solid var(--accent);
+            margin: -26px 0 0 -26px;
+        }
+
+        .cursor-ring.hovering {
+            width: 80px;
+            height: 80px;
+            opacity: 0.2;
+            margin: -36px 0 0 -36px;
+        }
+
+        /* ============================================
+           LOADER
+           ============================================ */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .loader-logo {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 2rem;
+            letter-spacing: -1px;
+            opacity: 0;
+        }
+
+        .loader-logo span {
+            color: var(--accent);
+        }
+
+        .loader-bar-container {
+            width: 200px;
+            height: 1px;
+            background: var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loader-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+        }
+
+        .loader-status {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            letter-spacing: 0.2rem;
+            opacity: 0;
+        }
+
+        /* ============================================
+           GRID OVERLAY & SCANNING LINE
+           ============================================ */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
+            background-size: 40px 40px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .scanning-line {
+            position: fixed;
+            top: -100px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, rgba(79, 209, 197, 0.03), transparent);
+            z-index: 100;
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(200vh); }
+        }
+
+        /* ============================================
+           CANVAS PARTICLES
+           ============================================ */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* ============================================
+           NAVIGATION
+           ============================================ */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(5, 5, 5, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid transparent;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        background 0.3s ease,
+                        border-color 0.3s ease;
+        }
+
+        nav.nav-hidden {
+            transform: translateY(-100%);
+        }
+
+        nav.nav-scrolled {
+            background: rgba(5, 5, 5, 0.9);
+            border-bottom-color: var(--border);
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-weight: 900;
+            letter-spacing: -1px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            color: var(--accent);
+            font-size: 0.7rem;
+            border: 1px solid var(--accent);
+            padding: 2px 8px;
+            font-weight: 400;
+            letter-spacing: 0.1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .nav-links a:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            padding: 5px;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 1px;
+            background: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(4px, 4px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(4px, -4px);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100vh;
+            background: rgba(5, 5, 5, 0.98);
+            backdrop-filter: blur(30px);
+            z-index: 999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .mobile-menu.open {
+            right: 0;
+        }
+
+        .mobile-menu a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-size: 2rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05rem;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: color 0.3s;
+        }
+
+        .mobile-menu a:hover {
+            color: var(--accent);
+        }
+
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero {
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 4rem;
+            overflow: hidden;
+        }
+
+        .hero-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
+            filter: grayscale(1) contrast(1.1);
+            z-index: -2;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 30% 50%, transparent 0%, var(--bg) 75%),
+                linear-gradient(to bottom, transparent 60%, var(--bg) 100%),
+                linear-gradient(to top, var(--bg) 0%, transparent 15%);
+            z-index: -1;
+        }
+
+        .hero-content {
+            max-width: 850px;
+            z-index: 10;
+        }
+
+        .pre-title {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            letter-spacing: 0.3rem;
+            opacity: 0;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 8rem;
+            line-height: 0.9;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            letter-spacing: -3px;
+        }
+
+        h1 .line {
+            display: block;
+            overflow: hidden;
+        }
+
+        h1 .line-inner {
+            display: block;
+            transform: translateY(110%);
+        }
+
+        h1 span.accent {
+            color: var(--accent);
+        }
+
+        .hero-desc {
+            color: var(--text-dim);
+            max-width: 500px;
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            opacity: 0;
+        }
+
+        .hero-meta {
+            display: flex;
+            gap: 4rem;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            opacity: 0;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .meta-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .meta-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .side-pagination {
+            position: absolute;
+            right: 4rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: flex-end;
+            opacity: 0;
+        }
+
+        .page-num {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            transition: all 0.3s;
+        }
+
+        .page-num.active {
+            color: var(--accent);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .page-num.active::after {
+            content: '';
+            display: inline-block;
+            width: 50px;
+            height: 1px;
+            background: var(--accent);
+            margin-left: 1rem;
+            vertical-align: middle;
+        }
+
+        .hero-scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--accent), transparent);
+            animation: scrollPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollPulse {
+            0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+            50% { opacity: 1; transform: scaleY(1); }
+        }
+
+        .scroll-text {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+        }
+
+        /* ============================================
+           SECTION HEADERS
+           ============================================ */
+        .section-header {
+            padding: 8rem 4rem 4rem;
+            text-align: center;
+        }
+
+        .section-header .pre-title {
+            opacity: 1;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            letter-spacing: -1px;
+        }
+
+        /* ============================================
+           SERVICES GRID
+           ============================================ */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            margin: 0 4rem;
+        }
+
+        .service-card {
+            background: var(--bg);
+            padding: 3rem 2rem;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+
+        .service-card:hover {
+            background: var(--surface);
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.5s ease;
+            transform-origin: left;
+        }
+
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .service-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: conic-gradient(from var(--angle), transparent 60%, var(--accent-glow) 80%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .service-card:hover::after {
+            opacity: 1;
+            animation: rotateGlow 3s linear infinite;
+        }
+
+        @keyframes rotateGlow {
+            from { --angle: 0deg; }
+            to { --angle: 360deg; }
+        }
+
+        .card-num {
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            margin-top: 1rem;
+            line-height: 1.1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-image {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.15;
+            filter: grayscale(1);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .service-card:hover .card-image {
+            opacity: 0.4;
+            filter: grayscale(0.7);
+            transform: scale(1.08);
+        }
+
+        .btn-more {
+            margin-top: auto;
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+            transition: gap 0.3s ease;
+        }
+
+        .btn-more:hover {
+            gap: 16px;
+        }
+
+        .btn-more svg {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-more:hover svg {
+            transform: translateX(4px);
+        }
+
+        /* ============================================
+           PROCESS TIMELINE
+           ============================================ */
+        .process-section {
+            padding: 10rem 4rem;
+        }
+
+        .process-section .section-header {
+            padding: 0 0 5rem;
+        }
+
+        .process-timeline {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .process-line {
+            position: absolute;
+            top: 24px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .process-line-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.1s linear;
+        }
+
+        .process-step {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 180px;
+            z-index: 1;
+        }
+
+        .step-node {
+            width: 48px;
+            height: 48px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            margin-bottom: 1.5rem;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .step-node.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .step-node.active::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .step-num {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .step-node.active .step-num {
+            display: none;
+        }
+
+        .step-title {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-dim);
+            transition: color 0.5s;
+        }
+
+        .step-node.active ~ .step-title {
+            color: var(--text-main);
+        }
+
+        .process-step.is-active .step-title {
+            color: var(--text-main);
+        }
+
+        .step-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            max-width: 160px;
+        }
+
+        /* ============================================
+           DIAGNOSTIC SECTION
+           ============================================ */
+        .diagnostic {
+            padding: 10rem 4rem;
+            display: flex;
+            gap: 6rem;
+            align-items: center;
+        }
+
+        .diag-visual {
+            flex: 1;
+            position: relative;
+            height: 600px;
+            border: 1px solid var(--border);
+            background: radial-gradient(circle at center, rgba(79, 209, 197, 0.05) 0%, transparent 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .diag-visual img {
+            width: 90%;
+            height: auto;
+            filter: drop-shadow(0 0 30px rgba(79, 209, 197, 0.2));
+            mix-blend-mode: luminosity;
+            opacity: 0.8;
+        }
+
+        .diag-point {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .diag-point::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            top: -15px;
+            left: -15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        .diag-text {
+            flex: 1;
+        }
+
+        .diag-text h2 {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .diag-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-box {
+            padding: 2rem;
+            border: 1px solid var(--border);
+            position: relative;
+            transition: border-color 0.3s ease;
+        }
+
+        .stat-box:hover {
+            border-color: var(--accent-dim);
+        }
+
+        .stat-box::before {
+            content: '+';
+            position: absolute;
+            top: -10px;
+            left: -5px;
+            color: var(--accent);
+            font-family: var(--font-mono);
+        }
+
+        .stat-val {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            font-family: var(--font-display);
+        }
+
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        /* ============================================
+           TRUST / TESTIMONIALS
+           ============================================ */
+        .trust-section {
+            padding: 8rem 4rem;
+        }
+
+        .trust-section .section-header {
+            padding: 0 0 5rem;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto 5rem;
+        }
+
+        .testimonial-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2.5rem;
+            position: relative;
+            transition: border-color 0.4s ease, transform 0.4s ease;
+        }
+
+        .testimonial-card:hover {
+            border-color: var(--accent-dim);
+            transform: translateY(-4px);
+        }
+
+        .quote-mark {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .quote-text {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .quote-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--surface-elevated);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .author-name {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .author-role {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        .stars {
+            color: var(--accent);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        /* Trust Badges */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            padding-top: 4rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .trust-badge {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.15rem;
+            padding: 0.8rem 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .trust-badge:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ============================================
+           FAQ SECTION
+           ============================================ */
+        .faq-section {
+            padding: 8rem 4rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-section .section-header {
+            padding: 0 0 4rem;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            text-align: left;
+            padding: 2rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 0.02rem;
+        }
+
+        .faq-icon {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            font-size: 1.2rem;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+            margin-left: 2rem;
+        }
+
+        .faq-item.open .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .faq-item.open .faq-answer {
+            grid-template-rows: 1fr;
+        }
+
+        .faq-answer-inner {
+            overflow: hidden;
+        }
+
+        .faq-answer-inner p {
+            padding: 0 0 2rem;
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* ============================================
+           CTA SECTION
+           ============================================ */
+        .cta {
+            padding: 10rem 4rem;
+            text-align: center;
+            background: linear-gradient(to top, var(--accent-dim) -100%, var(--bg) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .cta h3 {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+            letter-spacing: -2px;
+            position: relative;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+            padding: 1.5rem 4rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        box-shadow 0.3s ease;
+            letter-spacing: 0.05rem;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(79, 209, 197, 0.3);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .hotline {
+            margin-top: 3rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            position: relative;
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        footer {
+            padding: 4rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links span {
+            transition: color 0.3s;
+        }
+
+        .footer-links span:hover {
+            color: var(--accent);
+        }
+
+        /* ============================================
+           SCROLL REVEAL BASE
+           ============================================ */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        /* ============================================
+           REDUCED MOTION
+           ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .scanning-line { display: none; }
+            .reveal { opacity: 1; transform: none; }
+            h1 .line-inner { transform: none; }
+            .pre-title, .hero-desc, .hero-meta, .side-pagination, .hero-scroll-indicator {
+                opacity: 1;
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE: TABLET
+           ============================================ */
+        @media (max-width: 1200px) {
+            h1 { font-size: 5rem; }
+            .services-grid { grid-template-columns: 1fr 1fr; }
+            .diagnostic { flex-direction: column; }
+            .diag-text h2 { font-size: 3rem; }
+            .cta h3 { font-size: 3.5rem; }
+            .testimonials-grid { grid-template-columns: 1fr 1fr; }
+            .process-timeline { flex-wrap: wrap; gap: 3rem; justify-content: center; }
+            .process-line { display: none; }
+        }
+
+        /* ============================================
+           RESPONSIVE: MOBILE
+           ============================================ */
+        @media (max-width: 768px) {
+            nav { padding: 1rem 2rem; }
+
+            .nav-links { display: none; }
+
+            .hamburger { display: flex; }
+
+            .mobile-menu { display: flex; }
+
+            .hero { padding: 0 2rem; }
+
+            h1 { font-size: 3.5rem; letter-spacing: -1px; }
+
+            .hero-meta {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .side-pagination { display: none; }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+                margin: 0 2rem;
+            }
+
+            .service-card { height: 400px; }
+
+            .section-header {
+                padding: 5rem 2rem 3rem;
+            }
+
+            .section-header h2 { font-size: 2.5rem; }
+
+            .diagnostic {
+                padding: 5rem 2rem;
+                gap: 3rem;
+            }
+
+            .diag-visual { height: 350px; }
+
+            .diag-text h2 { font-size: 2.5rem; }
+
+            .diag-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .trust-section { padding: 5rem 2rem; }
+
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .faq-section { padding: 5rem 2rem; }
+
+            .cta {
+                padding: 5rem 2rem;
+            }
+
+            .cta h3 { font-size: 2.5rem; }
+
+            .btn-primary {
+                padding: 1.2rem 2.5rem;
+                font-size: 0.9rem;
+            }
+
+            footer {
+                padding: 2rem;
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .process-section { padding: 5rem 2rem; }
+
+            .process-step { width: 140px; }
+
+            /* Hide custom cursor on touch */
+            .cursor-dot, .cursor-ring { display: none !important; }
+
+            body { cursor: auto; }
+            a, button { cursor: pointer; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 2.8rem; }
+            .cta h3 { font-size: 2rem; }
+            .section-header h2 { font-size: 2rem; }
+            .hero-meta { gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOADER -->
+    <div class="loader" id="loader">
+        <div class="loader-logo">KFZ<span>·</span>EXPERT</div>
+        <div class="loader-bar-container">
+            <div class="loader-bar" id="loader-bar"></div>
+        </div>
+        <div class="loader-status" id="loader-status">INITIALISIERUNG...</div>
+    </div>
+
+    <!-- CUSTOM CURSOR -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-ring" id="cursor-ring"></div>
+
+    <!-- CANVAS PARTICLES -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- AMBIENT -->
+    <div class="grid-overlay"></div>
+    <div class="scanning-line"></div>
+
+    <!-- NAVIGATION -->
+    <nav id="navbar">
+        <div class="logo">KFZ·EXPERT <span>VDI</span></div>
+        <div class="nav-links">
+            <a href="#leistungen">Gutachten</a>
+            <a href="#leistungen">Bewertung</a>
+            <a href="#prozess">Haftpflicht</a>
+            <a href="#vertrauen">Über uns</a>
+            <a href="#kontakt">Kontakt</a>
+        </div>
+        <div class="nav-right">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="#leistungen">Gutachten</a>
+        <a href="#leistungen">Bewertung</a>
+        <a href="#prozess">Haftpflicht</a>
+        <a href="#vertrauen">Über uns</a>
+        <a href="#kontakt">Kontakt</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- HERO -->
+        <section class="hero" id="hero">
+            <video class="hero-video" autoplay muted loop playsinline preload="metadata"
+                poster="https://images.pexels.com/photos/3311574/pexels-photo-3311574.jpeg?auto=compress&cs=tinysrgb&w=1600">
+                <source src="Animate_cars_driving_202604040024.mp4" type="video/mp4">
+            </video>
+            <div class="hero-overlay"></div>
+
+            <div class="hero-content">
+                <span class="pre-title">[ SYSTEM_STATUS: ONLINE ]</span>
+                <h1>
+                    <span class="line"><span class="line-inner">PRÄZISION</span></span>
+                    <span class="line"><span class="line-inner accent">IM DETAIL.</span></span>
+                </h1>
+                <p class="hero-desc">
+                    Unabhängige KFZ-Gutachten auf höchstem technischem Niveau.
+                    Wir analysieren Schäden, wo andere nur oberflächlich prüfen.
+                    Forensic Car Appraisal in Perfektion.
+                </p>
+                <div class="hero-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Reaktionszeit</span>
+                        <span class="meta-value">&lt; 24 STUNDEN</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Präzision</span>
+                        <span class="meta-value">TÜV ZERTIFIZIERT</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Standort</span>
+                        <span class="meta-value">BERLIN / BRANDENBURG</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-pagination">
+                <span class="page-num">01</span>
+                <span class="page-num">02</span>
+                <span class="page-num active">03</span>
+                <span class="page-num">04</span>
+                <span class="page-num">05</span>
+            </div>
+
+            <div class="hero-scroll-indicator">
+                <div class="scroll-line"></div>
+                <span class="scroll-text">Scroll</span>
+            </div>
+        </section>
+
+        <!-- SERVICES HEADER -->
+        <section class="section-header reveal" id="leistungen">
+            <span class="pre-title">UNSERE EXPERTISE</span>
+            <h2>LEISTUNGSSPEKTRUM</h2>
+        </section>
+
+        <!-- SERVICES GRID -->
+        <section class="services-grid">
+            <div class="service-card reveal">
+                <div>
+                    <span class="card-num">MOD_01</span>
+                    <h3 class="card-title">Schaden-<br>gutachten</h3>
+                    <p class="card-desc">Detaillierte Beweissicherung nach Verkehrsunfällen. Unabhängig, präzise und rechtssicher.</p>
+                </div>
+                <div class="card-image" style="background-image: url('https://images.pexels.com/photos/164634/pexels-photo-164634.jpeg?auto=compress&cs=tinysrgb&w=600')"></div>
+                <a href="#" class="btn-more">DETAILS ANSEHEN
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="service-card reveal">
+                <div>
+                    <span class="card-num">MOD_02</span>
+                    <h3 class="card-title">Oldtimer-<br>bewertung</h3>
+                    <p class="card-desc">Marktwertanalysen für klassische Fahrzeuge. Leidenschaft trifft auf technische Akribie.</p>
+                </div>
+                <div class="card-image" style="background-image: url('https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=600')"></div>
+                <a href="#" class="btn-more">DETAILS ANSEHEN
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="service-card reveal">
+                <div>
+                    <span class="card-num">MOD_03</span>
+                    <h3 class="card-title">Technische<br>Prüfung</h3>
+                    <p class="card-desc">Forensische Untersuchung von Aggregaten und Elektronikkomponenten moderner Fahrzeuge.</p>
+                </div>
+                <div class="card-image" style="background-image: url('https://images.pexels.com/photos/2244746/pexels-photo-2244746.jpeg?auto=compress&cs=tinysrgb&w=600')"></div>
+                <a href="#" class="btn-more">DETAILS ANSEHEN
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="service-card reveal">
+                <div>
+                    <span class="card-num">MOD_04</span>
+                    <h3 class="card-title">Kauf-<br>beratung</h3>
+                    <p class="card-desc">Wir prüfen Ihren Traumwagen vor dem Kauf. Vermeiden Sie kostspielige Überraschungen.</p>
+                </div>
+                <div class="card-image" style="background-image: url('https://images.pexels.com/photos/244553/pexels-photo-244553.jpeg?auto=compress&cs=tinysrgb&w=600')"></div>
+                <a href="#" class="btn-more">DETAILS ANSEHEN
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+        <!-- PROCESS TIMELINE -->
+        <section class="process-section" id="prozess">
+            <div class="section-header reveal" style="text-align: center;">
+                <span class="pre-title">ABLAUF</span>
+                <h2>UNSER PROZESS</h2>
+            </div>
+
+            <div class="process-timeline">
+                <div class="process-line">
+                    <div class="process-line-fill" id="process-line-fill"></div>
+                </div>
+
+                <div class="process-step reveal">
+                    <div class="step-node"><span class="step-num">01</span></div>
+                    <h4 class="step-title">Kontakt</h4>
+                    <p class="step-desc">Telefonisch oder online Ihren Fall schildern</p>
+                </div>
+
+                <div class="process-step reveal">
+                    <div class="step-node"><span class="step-num">02</span></div>
+                    <h4 class="step-title">Termin</h4>
+                    <p class="step-desc">Innerhalb von 24h einen Vor-Ort-Termin erhalten</p>
+                </div>
+
+                <div class="process-step reveal">
+                    <div class="step-node"><span class="step-num">03</span></div>
+                    <h4 class="step-title">Inspektion</h4>
+                    <p class="step-desc">Forensische Fahrzeuganalyse mit modernster Technik</p>
+                </div>
+
+                <div class="process-step reveal">
+                    <div class="step-node"><span class="step-num">04</span></div>
+                    <h4 class="step-title">Analyse</h4>
+                    <p class="step-desc">Detaillierte Auswertung aller Befunde und Daten</p>
+                </div>
+
+                <div class="process-step reveal">
+                    <div class="step-node"><span class="step-num">05</span></div>
+                    <h4 class="step-title">Gutachten</h4>
+                    <p class="step-desc">Rechtssicheres Gutachten für Versicherung und Gericht</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIAGNOSTIC -->
+        <section class="diagnostic" id="analyse">
+            <div class="diag-visual reveal">
+                <img src="https://images.pexels.com/photos/3807517/pexels-photo-3807517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="Fahrzeug-Diagnose">
+                <div class="diag-point" style="top: 30%; left: 40%;"></div>
+                <div class="diag-point" style="top: 60%; left: 70%;"></div>
+                <div class="diag-point" style="top: 45%; left: 20%;"></div>
+            </div>
+            <div class="diag-text reveal">
+                <span class="pre-title" style="opacity:1;">PROZESS: ANALYSE</span>
+                <h2>WIR SEHEN, WAS ANDERE ÜBERSEHEN.</h2>
+                <p style="color: var(--text-dim); margin-bottom: 2rem; line-height: 1.7;">
+                    Mit modernster Diagnosetechnik und jahrzehntelanger Erfahrung erstellen wir Gutachten,
+                    die vor jeder Versicherung und jedem Gericht Bestand haben.
+                </p>
+                <div class="diag-stats">
+                    <div class="stat-box">
+                        <span class="stat-val" data-count="15000">0</span>
+                        <span class="stat-label">Erstellte Gutachten</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-val" data-count="100" data-suffix="%">0</span>
+                        <span class="stat-label">Unabhängigkeit</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRUST / TESTIMONIALS -->
+        <section class="trust-section" id="vertrauen">
+            <div class="section-header reveal" style="text-align: center;">
+                <span class="pre-title">REFERENZEN</span>
+                <h2>VERTRAUEN DURCH EXPERTISE</h2>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card reveal">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <div class="quote-mark">"</div>
+                    <p class="quote-text">
+                        Nach einem schweren Unfall hat das Team innerhalb von 24 Stunden ein detailliertes
+                        Gutachten erstellt. Die Versicherung hat sofort gezahlt.
+                    </p>
+                    <div class="quote-author">
+                        <div class="author-avatar">MK</div>
+                        <div class="author-info">
+                            <span class="author-name">Michael K.</span>
+                            <span class="author-role">Privatperson</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card reveal">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <div class="quote-mark">"</div>
+                    <p class="quote-text">
+                        Die Oldtimer-Bewertung meines Porsche 911 war unglaublich detailliert.
+                        Jedes Bauteil wurde dokumentiert. Absolute Profis.
+                    </p>
+                    <div class="quote-author">
+                        <div class="author-avatar">TS</div>
+                        <div class="author-info">
+                            <span class="author-name">Thomas S.</span>
+                            <span class="author-role">Oldtimer-Sammler</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card reveal">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <div class="quote-mark">"</div>
+                    <p class="quote-text">
+                        Wir arbeiten seit Jahren exklusiv mit KFZ-Expert zusammen.
+                        Die forensische Genauigkeit ihrer Gutachten ist unübertroffen.
+                    </p>
+                    <div class="quote-author">
+                        <div class="author-avatar">AW</div>
+                        <div class="author-info">
+                            <span class="author-name">Autohaus Wagner</span>
+                            <span class="author-role">Geschäftskunde</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trust-badges reveal">
+                <div class="trust-badge">TÜV ZERTIFIZIERT</div>
+                <div class="trust-badge">DEKRA PARTNER</div>
+                <div class="trust-badge">VDI MITGLIED</div>
+                <div class="trust-badge">IHK BERLIN</div>
+                <div class="trust-badge">BVSK VERBAND</div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq-section" id="faq">
+            <div class="section-header reveal" style="text-align: center;">
+                <span class="pre-title">HÄUFIGE FRAGEN</span>
+                <h2>FAQ</h2>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-item reveal">
+                    <button class="faq-question">
+                        Was kostet ein KFZ-Gutachten?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Die Kosten richten sich nach dem Schadensumfang und der Art des Gutachtens.
+                            Bei einem Haftpflichtschaden trägt in der Regel die gegnerische Versicherung die Kosten.
+                            Kontaktieren Sie uns für ein individuelles Angebot.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item reveal">
+                    <button class="faq-question">
+                        Wie lange dauert die Erstellung?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Standardgutachten werden innerhalb von 48 Stunden nach der Inspektion fertiggestellt.
+                            Bei Eilbedarf bieten wir einen Express-Service innerhalb von 24 Stunden an.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item reveal">
+                    <button class="faq-question">
+                        Brauche ich ein Gutachten nach einem Unfall?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Bei einem Haftpflichtschaden ab ca. 750 EUR haben Sie das Recht auf ein unabhängiges Gutachten.
+                            Dies sichert Ihre Ansprüche gegenüber der Versicherung und dokumentiert alle Schäden forensisch.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item reveal">
+                    <button class="faq-question">
+                        Kommen Sie auch vor Ort?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Ja, wir bieten Vor-Ort-Gutachten in Berlin und Brandenburg an.
+                            Unsere Sachverständigen kommen direkt zu Ihrem Standort — ob Werkstatt,
+                            Unfallort oder private Adresse.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item reveal">
+                    <button class="faq-question">
+                        Was ist der Unterschied zu einem Kostenvoranschlag?
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            <p>Ein Gutachten ist ein umfassendes, rechtssicheres Dokument mit Wertminderung,
+                            Nutzungsausfall und forensischer Schadensanalyse. Ein Kostenvoranschlag listet lediglich
+                            die voraussichtlichen Reparaturkosten auf.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="cta reveal" id="kontakt">
+            <h3>BEREIT FÜR EINE<br>DIAGNOSE?</h3>
+            <a href="#" class="btn-primary">JETZT TERMIN VEREINBAREN</a>
+            <div class="hotline">
+                HOTLINE: +49 (0) 30 123 456 789
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div>&copy; 2025 KFZ-EXPERTEN-GRUPPE BERLIN</div>
+        <div class="footer-links">
+            <span>INSTAGRAM</span>
+            <span>LINKEDIN</span>
+            <span>DATENSCHUTZ</span>
+            <span>IMPRESSUM</span>
+        </div>
+        <div>ST_CODE: [99-A_PRZN]</div>
+    </footer>
+
+    <!-- GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        // ============================================
+        // LOADER
+        // ============================================
+        const loader = document.getElementById('loader');
+        const loaderBar = document.getElementById('loader-bar');
+        const loaderLogo = document.querySelector('.loader-logo');
+        const loaderStatus = document.getElementById('loader-status');
+
+        const loaderTL = gsap.timeline({
+            onComplete: () => {
+                initPage();
+                loader.remove();
+            }
+        });
+
+        loaderTL
+            .to(loaderLogo, { opacity: 1, duration: 0.3 })
+            .to(loaderStatus, { opacity: 1, duration: 0.2 }, '-=0.1')
+            .to(loaderBar, { width: '100%', duration: 1.2, ease: 'power2.inOut' }, '-=0.1')
+            .to(loaderStatus, {
+                duration: 0.5,
+                onStart: () => { loaderStatus.textContent = 'SYSTEM BEREIT'; }
+            })
+            .to(loader, {
+                yPercent: -100,
+                duration: 0.8,
+                ease: 'power3.inOut',
+                delay: 0.2
+            });
+
+        // ============================================
+        // PARTICLE NETWORK
+        // ============================================
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        const particles = [];
+        const PARTICLE_COUNT = 40;
+        const CONNECTION_DIST = 120;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                size: Math.random() * 1.5 + 0.5
+            });
+        }
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(79, 209, 197, 0.15)';
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < CONNECTION_DIST) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(79, 209, 197, ${0.06 * (1 - dist / CONNECTION_DIST)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(drawParticles);
+        }
+
+        // Check reduced motion
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!prefersReducedMotion) {
+            drawParticles();
+        }
+
+        // ============================================
+        // CUSTOM CURSOR
+        // ============================================
+        const cursorDot = document.getElementById('cursor-dot');
+        const cursorRing = document.getElementById('cursor-ring');
+        const isTouch = 'ontouchstart' in window;
+
+        if (!isTouch) {
+            let mouseX = 0, mouseY = 0;
+            let ringX = 0, ringY = 0;
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                cursorDot.style.left = mouseX - 4 + 'px';
+                cursorDot.style.top = mouseY - 4 + 'px';
+            });
+
+            function animateRing() {
+                ringX += (mouseX - ringX) * 0.15;
+                ringY += (mouseY - ringY) * 0.15;
+                cursorRing.style.left = ringX - 20 + 'px';
+                cursorRing.style.top = ringY - 20 + 'px';
+                requestAnimationFrame(animateRing);
+            }
+            animateRing();
+
+            const interactiveElements = document.querySelectorAll('a, button, .service-card, .testimonial-card, .trust-badge, .faq-question');
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorDot.classList.add('hovering');
+                    cursorRing.classList.add('hovering');
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorDot.classList.remove('hovering');
+                    cursorRing.classList.remove('hovering');
+                });
+            });
+        } else {
+            cursorDot.style.display = 'none';
+            cursorRing.style.display = 'none';
+        }
+
+        // ============================================
+        // NAVBAR SCROLL BEHAVIOR
+        // ============================================
+        const navbar = document.getElementById('navbar');
+        let lastScrollY = 0;
+        let ticking = false;
+
+        function updateNav() {
+            const currentScrollY = window.scrollY;
+
+            if (currentScrollY > 100) {
+                navbar.classList.add('nav-scrolled');
+                if (currentScrollY > lastScrollY && currentScrollY > 300) {
+                    navbar.classList.add('nav-hidden');
+                } else {
+                    navbar.classList.remove('nav-hidden');
+                }
+            } else {
+                navbar.classList.remove('nav-scrolled');
+                navbar.classList.remove('nav-hidden');
+            }
+
+            lastScrollY = currentScrollY;
+            ticking = false;
+        }
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(updateNav);
+                ticking = true;
+            }
+        });
+
+        // ============================================
+        // HAMBURGER MENU
+        // ============================================
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('open');
+            document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+
+            if (mobileMenu.classList.contains('open')) {
+                gsap.fromTo(mobileLinks,
+                    { opacity: 0, x: 30 },
+                    { opacity: 1, x: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out', delay: 0.2 }
+                );
+            }
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('open');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // ============================================
+        // FAQ ACCORDION
+        // ============================================
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const item = btn.closest('.faq-item');
+                const wasOpen = item.classList.contains('open');
+
+                // Close all
+                document.querySelectorAll('.faq-item.open').forEach(openItem => {
+                    openItem.classList.remove('open');
+                });
+
+                if (!wasOpen) {
+                    item.classList.add('open');
+                }
+            });
+        });
+
+        // ============================================
+        // CARD TILT EFFECT
+        // ============================================
+        if (!isTouch) {
+            document.querySelectorAll('.service-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / centerY * -4;
+                    const rotateY = (x - centerX) / centerX * 4;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+                    card.style.transition = 'transform 0.5s ease';
+                    setTimeout(() => { card.style.transition = ''; }, 500);
+                });
+            });
+        }
+
+        // ============================================
+        // VIDEO MOBILE HANDLING
+        // ============================================
+        const heroVideo = document.querySelector('.hero-video');
+        if (heroVideo) {
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const saveData = navigator.connection?.saveData;
+
+            if (isMobile || saveData) {
+                heroVideo.pause();
+                heroVideo.removeAttribute('autoplay');
+            }
+        }
+
+        // ============================================
+        // PAGE INIT (called after loader)
+        // ============================================
+        function initPage() {
+            // Hero Animations
+            const heroTL = gsap.timeline();
+
+            heroTL
+                .to('.pre-title:first-of-type', { opacity: 1, duration: 0.6 }, 0.2)
+                .to('.line-inner', {
+                    y: 0,
+                    duration: 0.9,
+                    stagger: 0.15,
+                    ease: 'power3.out'
+                }, 0.3)
+                .to('.hero-desc', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.8)
+                .to('.hero-meta', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 1.0)
+                .to('.side-pagination', { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' }, 1.1)
+                .to('.hero-scroll-indicator', { opacity: 1, duration: 0.5 }, 1.3);
+
+            // Scroll Reveals
+            gsap.utils.toArray('.reveal').forEach((el, i) => {
+                gsap.to(el, {
+                    scrollTrigger: {
+                        trigger: el,
+                        start: 'top 85%',
+                        once: true
+                    },
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    ease: 'power2.out',
+                    delay: el.closest('.services-grid') ? (Array.from(el.parentNode.children).indexOf(el) * 0.1) : 0
+                });
+            });
+
+            // Diagnostic Parallax
+            const diagImg = document.querySelector('.diag-visual img');
+            if (diagImg) {
+                gsap.to(diagImg, {
+                    scrollTrigger: {
+                        trigger: '.diag-visual',
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: 1
+                    },
+                    y: -60,
+                    ease: 'none'
+                });
+            }
+
+            // Counter Animation
+            document.querySelectorAll('.stat-val[data-count]').forEach(el => {
+                const target = parseInt(el.dataset.count);
+                const suffix = el.dataset.suffix || '';
+                const isLarge = target > 1000;
+
+                ScrollTrigger.create({
+                    trigger: el,
+                    start: 'top 85%',
+                    once: true,
+                    onEnter: () => {
+                        const obj = { val: 0 };
+                        gsap.to(obj, {
+                            val: target,
+                            duration: 2,
+                            ease: 'power2.out',
+                            onUpdate: () => {
+                                const current = Math.round(obj.val);
+                                if (isLarge) {
+                                    el.textContent = (current / 1000).toFixed(current >= target ? 0 : 1) + 'k+';
+                                } else {
+                                    el.textContent = current + suffix;
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Process Timeline
+            const processSteps = document.querySelectorAll('.process-step');
+            const processLineFill = document.getElementById('process-line-fill');
+
+            if (processLineFill && processSteps.length > 0) {
+                ScrollTrigger.create({
+                    trigger: '.process-timeline',
+                    start: 'top 70%',
+                    end: 'bottom 50%',
+                    scrub: 0.5,
+                    onUpdate: (self) => {
+                        const progress = self.progress;
+                        processLineFill.style.width = (progress * 100) + '%';
+
+                        processSteps.forEach((step, idx) => {
+                            const stepProgress = (idx + 1) / processSteps.length;
+                            const node = step.querySelector('.step-node');
+                            if (progress >= stepProgress - 0.1) {
+                                node.classList.add('active');
+                                step.classList.add('is-active');
+                            } else {
+                                node.classList.remove('active');
+                                step.classList.remove('is-active');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // CTA Entrance
+            gsap.from('.cta h3', {
+                scrollTrigger: {
+                    trigger: '.cta',
+                    start: 'top 80%',
+                    once: true
+                },
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                ease: 'power2.out'
+            });
+
+            gsap.from('.btn-primary', {
+                scrollTrigger: {
+                    trigger: '.cta',
+                    start: 'top 75%',
+                    once: true
+                },
+                y: 30,
+                opacity: 0,
+                scale: 0.95,
+                duration: 0.6,
+                delay: 0.3,
+                ease: 'power2.out'
+            });
+        }
+
+    })();
+    </script>
+
+</body>
+</html>

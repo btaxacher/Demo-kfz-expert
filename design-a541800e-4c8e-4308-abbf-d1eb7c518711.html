@@ -1,0 +1,678 @@
+<html lang="de" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">KFZ EXPERTE | PRÄZISION IM DETAIL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" vid="5">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" vid="6">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&amp;family=Space+Mono:wght@400;700&amp;family=Space+Grotesk:wght@300;500;700&amp;display=swap" rel="stylesheet" vid="7">
+    <style vid="8">
+        :root {
+            --bg: #050505;
+            --surface: #0D0D0D;
+            --accent: #4FD1C5;
+            --accent-dim: #2A6B65;
+            --text-main: #FFFFFF;
+            --text-dim: #888888;
+            --border: rgba(255, 255, 255, 0.08);
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: crosshair;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
+            background-size: 40px 40px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .scanning-line {
+            position: fixed;
+            top: -100px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, rgba(79, 209, 197, 0.03), transparent);
+            z-index: 100;
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(200vh); }
+        }
+
+        
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-weight: 900;
+            letter-spacing: -1px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            color: var(--accent);
+            font-size: 0.8rem;
+            border: 1px solid var(--accent);
+            padding: 2px 6px;
+            font-weight: 400;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        
+        .hero {
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 4rem;
+            overflow: hidden;
+        }
+
+        .hero-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            filter: grayscale(1) contrast(1.1);
+            z-index: -2;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, var(--bg) 90%);
+            z-index: -1;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 10;
+        }
+
+        .pre-title {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: block;
+            letter-spacing: 0.3rem;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 8rem;
+            line-height: 0.9;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            letter-spacing: -2px;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .hero-meta {
+            display: flex;
+            gap: 4rem;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .meta-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .meta-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .side-pagination {
+            position: absolute;
+            right: 4rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: flex-end;
+        }
+
+        .page-num {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-num.active {
+            color: var(--accent);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .page-num.active::after {
+            content: '';
+            display: inline-block;
+            width: 50px;
+            height: 1px;
+            background: var(--accent);
+            margin-left: 1rem;
+            vertical-align: middle;
+        }
+
+        
+        .section-header {
+            padding: 8rem 4rem 4rem;
+            text-align: center;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            margin: 0 4rem;
+        }
+
+        .service-card {
+            background: var(--bg);
+            padding: 3rem 2rem;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .service-card:hover {
+            background: var(--surface);
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.5s ease;
+            transform-origin: left;
+        }
+
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-num {
+            font-family: var(--font-mono);
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            margin-top: 1rem;
+            line-height: 1.1;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-top: 2rem;
+        }
+
+        .card-image {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            filter: grayscale(1);
+            transition: all 0.5s ease;
+        }
+
+        .service-card:hover .card-image {
+            opacity: 0.5;
+            transform: scale(1.1);
+        }
+
+        .btn-more {
+            margin-top: auto;
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        
+        .diagnostic {
+            padding: 10rem 4rem;
+            display: flex;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .diag-visual {
+            flex: 1;
+            position: relative;
+            height: 600px;
+            border: 1px solid var(--border);
+            background: radial-gradient(circle at center, rgba(79, 209, 197, 0.05) 0%, transparent 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .diag-visual img {
+            width: 90%;
+            height: auto;
+            filter: drop-shadow(0 0 30px rgba(79, 209, 197, 0.2));
+        }
+
+        .diag-point {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .diag-point::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            top: -15px;
+            left: -15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        .diag-text {
+            flex: 1;
+        }
+
+        .diag-text h2 {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            line-height: 1;
+        }
+
+        .diag-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-box {
+            padding: 2rem;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .stat-box::before {
+            content: '+';
+            position: absolute;
+            top: -10px;
+            left: -5px;
+            color: var(--accent);
+            font-family: var(--font-mono);
+        }
+
+        .stat-val {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            font-family: var(--font-display);
+        }
+
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        
+        .cta {
+            padding: 10rem 4rem;
+            text-align: center;
+            background: linear-gradient(to top, var(--accent-dim) -100%, var(--bg) 100%);
+        }
+
+        .cta h3 {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+            padding: 1.5rem 4rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: #FFFFFF;
+        }
+
+        footer {
+            padding: 4rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+        }
+
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .scroll-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        
+        @media (max-width: 1200px) {
+            h1 { font-size: 5rem; }
+            .services-grid { grid-template-columns: 1fr 1fr; }
+            .diagnostic { flex-direction: column; }
+        }
+    </style>
+</head>
+<body vid="9">
+
+    <div class="grid-overlay" vid="10"></div>
+    <div class="scanning-line" vid="11"></div>
+
+    <nav vid="12">
+        <div class="logo" vid="13">KFZ·EXPERT <span vid="14">VDI</span></div>
+        <div class="nav-links" vid="15">
+            <a href="#" vid="16">Gutachten</a>
+            <a href="#" vid="17">Bewertung</a>
+            <a href="#" vid="18">Haftpflicht</a>
+            <a href="#" vid="19">Über uns</a>
+            <a href="#" vid="20">Kontakt</a>
+        </div>
+        <div class="search-icon" vid="21">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" vid="22">
+                <circle cx="11" cy="11" r="8" vid="23"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65" vid="24"></line>
+            </svg>
+        </div>
+    </nav>
+
+    <main vid="25">
+        <section class="hero" vid="26">
+            <img src="https://images.pexels.com/photos/3311574/pexels-photo-3311574.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1600" alt="Engine Detail" class="hero-img" vid="27">
+            <div class="hero-overlay" vid="28"></div>
+            
+            <div class="hero-content" vid="29">
+                <span class="pre-title" vid="30">[ SYSTEM_STATUS: ONLINE ]</span>
+                <h1 vid="31">PRÄZISION<br vid="32"><span vid="33">IM DETAIL.</span></h1>
+                <p style="color: var(--text-dim); max-width: 500px; margin-bottom: 2rem;" vid="34">
+                    Unabhängige KFZ-Gutachten auf höchstem technischem Niveau. Wir analysieren Schäden, wo andere nur oberflächlich prüfen. Forensic Car Appraisal in Perfektion.
+                </p>
+                <div class="hero-meta" vid="35">
+                    <div class="meta-item" vid="36">
+                        <span class="meta-label" vid="37">Reaktionszeit</span>
+                        <span class="meta-value" vid="38">&lt; 24 STUNDEN</span>
+                    </div>
+                    <div class="meta-item" vid="39">
+                        <span class="meta-label" vid="40">Präzision</span>
+                        <span class="meta-value" vid="41">TÜV ZERTIFIZIERT</span>
+                    </div>
+                    <div class="meta-item" vid="42">
+                        <span class="meta-label" vid="43">Standort</span>
+                        <span class="meta-value" vid="44">BERLIN / BRANDENBURG</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-pagination" vid="45">
+                <span class="page-num" vid="46">01</span>
+                <span class="page-num" vid="47">02</span>
+                <span class="page-num active" vid="48">03</span>
+                <span class="page-num" vid="49">04</span>
+                <span class="page-num" vid="50">05</span>
+            </div>
+        </section>
+
+        <section class="section-header scroll-reveal" vid="51">
+            <span class="pre-title" vid="52">UNSERE EXPERTISE</span>
+            <h2 vid="53">LEISTUNGSSPEKTRUM</h2>
+        </section>
+
+        <section class="services-grid" vid="54">
+            <div class="service-card scroll-reveal" vid="55">
+                <div vid="56">
+                    <span class="card-num" vid="57">MOD_01</span>
+                    <h3 class="card-title" vid="58">Schaden-<br vid="59">gutachten</h3>
+                    <p class="card-desc" vid="60">Detaillierte Beweissicherung nach Verkehrsunfällen. Unabhängig, präzise und rechtssicher.</p>
+                </div>
+                <div class="card-image" style="background-image: url('https://images.pexels.com/photos/164634/pexels-photo-164634.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=600')" vid="61"></div>
+                <a href="#" class="btn-more" vid="62">DETAILS ANSEHEN <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" vid="63"><line x1="5" y1="12" x2="19" y2="12" vid="64"></line><polyline points="12 5 19 12 12 19" vid="65"></polyline></svg></a>
+            </div>
+
+            <div class="service-card scroll-reveal" style="transition-delay: 0.1s" vid="66">
+                <div vid="67">
+                    <span class="card-num" vid="68">MOD_02</span>
+                    <h3 class="card-title" vid="69">Oldtimer-<br vid="70">bewertung</h3>
+                    <p class="card-desc" vid="71">Marktwertanalysen für klassische Fahrzeuge. Leidenschaft trifft auf technische Akribie.</p>
+                </div>
+                <div class="card-image" style="background-image: url('https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=600')" vid="72"></div>
+                <a href="#" class="btn-more" vid="73">DETAILS ANSEHEN <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" vid="74"><line x1="5" y1="12" x2="19" y2="12" vid="75"></line><polyline points="12 5 19 12 12 19" vid="76"></polyline></svg></a>
+            </div>
+
+            <div class="service-card scroll-reveal" style="transition-delay: 0.2s" vid="77">
+                <div vid="78">
+                    <span class="card-num" vid="79">MOD_03</span>
+                    <h3 class="card-title" vid="80">Technische<br vid="81">Prüfung</h3>
+                    <p class="card-desc" vid="82">Forensische Untersuchung von Aggregaten und Elektronikkomponenten moderner Fahrzeuge.</p>
+                </div>
+                <div class="card-image" style="background-image: url('https://images.pexels.com/photos/2244746/pexels-photo-2244746.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=600')" vid="83"></div>
+                <a href="#" class="btn-more" vid="84">DETAILS ANSEHEN <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" vid="85"><line x1="5" y1="12" x2="19" y2="12" vid="86"></line><polyline points="12 5 19 12 12 19" vid="87"></polyline></svg></a>
+            </div>
+
+            <div class="service-card scroll-reveal" style="transition-delay: 0.3s" vid="88">
+                <div vid="89">
+                    <span class="card-num" vid="90">MOD_04</span>
+                    <h3 class="card-title" vid="91">Kauf-<br vid="92">beratung</h3>
+                    <p class="card-desc" vid="93">Wir prüfen Ihren Traumwagen vor dem Kauf. Vermeiden Sie kostspielige Überraschungen.</p>
+                </div>
+                <div class="card-image" style="background-image: url('https://images.pexels.com/photos/244553/pexels-photo-244553.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=600')" vid="94"></div>
+                <a href="#" class="btn-more" vid="95">DETAILS ANSEHEN <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" vid="96"><line x1="5" y1="12" x2="19" y2="12" vid="97"></line><polyline points="12 5 19 12 12 19" vid="98"></polyline></svg></a>
+            </div>
+        </section>
+
+        <section class="diagnostic" vid="99">
+            <div class="diag-visual scroll-reveal" vid="100">
+                
+                <img src="https://images.pexels.com/photos/1015568/pexels-photo-1015568.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1260&amp;h=750&amp;dpr=2" alt="Technical Chassis" style="mix-blend-mode: luminosity; opacity: 0.8;" vid="101">
+                <div class="diag-point" style="top: 30%; left: 40%;" vid="102"></div>
+                <div class="diag-point" style="top: 60%; left: 70%;" vid="103"></div>
+                <div class="diag-point" style="top: 45%; left: 20%;" vid="104"></div>
+            </div>
+            <div class="diag-text scroll-reveal" vid="105">
+                <span class="pre-title" vid="106">PROZESS: ANALYSE</span>
+                <h2 vid="107">WIR SEHEN, WAS ANDERE ÜBERSEHEN.</h2>
+                <p style="color: var(--text-dim); margin-bottom: 2rem;" vid="108">Mit modernster Diagnosetechnik und jahrzehntelanger Erfahrung erstellen wir Gutachten, die vor jeder Versicherung und jedem Gericht Bestand haben.</p>
+                
+                <div class="diag-stats" vid="109">
+                    <div class="stat-box" vid="110">
+                        <span class="stat-val" vid="111">15k+</span>
+                        <span class="stat-label" vid="112">Erstellte Gutachten</span>
+                    </div>
+                    <div class="stat-box" vid="113">
+                        <span class="stat-val" vid="114">100%</span>
+                        <span class="stat-label" vid="115">Unabhängigkeit</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta scroll-reveal" vid="116">
+            <h3 vid="117">BEREIT FÜR EINE<br vid="118">DIAGNOSE?</h3>
+            <a href="#" class="btn-primary" vid="119">JETZT TERMIN VEREINBAREN</a>
+            <div style="margin-top: 3rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent);" vid="120">
+                HOTLINE: +49 (0) 30 123 456 789
+            </div>
+        </section>
+    </main>
+
+    <footer vid="121">
+        <div vid="122">© 2024 KFZ-EXPERTEN-GRUPPE BERLIN</div>
+        <div style="display: flex; gap: 2rem;" vid="123">
+            <span vid="124">INSTAGRAM</span>
+            <span vid="125">LINKEDIN</span>
+            <span vid="126">DATENSCHUTZ</span>
+            <span vid="127">IMPRESSUM</span>
+        </div>
+        <div vid="128">ST_CODE: [99-A_PRZN]</div>
+    </footer>
+
+    <script vid="129">
+        
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+        
+        document.addEventListener('mousemove', (e) => {
+            
+        });
+    </script>
+
+</body></html>
